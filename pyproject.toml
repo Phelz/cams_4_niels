@@ -1,0 +1,38 @@
+[project]
+name = "cams-4-niels"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Filo Ghaly",email = "filobateer.ghaly@ucalgary.ca"}
+]
+readme = "README.md"
+requires-python = "^3.13"
+dependencies = [
+    "quart (>=0.20.0,<0.21.0)",
+    "opencv-python (>=4.12.0.88,<5.0.0.0)",
+    "dash (>=3.1.1,<4.0.0)",
+    "dash-extensions (>=2.0.4,<3.0.0)",
+    "rich (>=14.0.0,<15.0.0)",
+    "dash-bootstrap-components (>=2.0.3,<3.0.0)",
+    "dash-core-components (>=2.0.0,<3.0.0)",
+    "dash-html-components (>=2.0.0,<3.0.0)"
+
+
+
+]
+
+[tool.poetry]
+packages = [
+
+    {include = "pages", from = "src"},
+    {include = "components", from = "src"},
+    {include = "layouts", from = "src"},
+
+]
+
+
+
+            
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
