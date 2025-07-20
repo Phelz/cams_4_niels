@@ -84,6 +84,13 @@ def video_feed(cam_id):
     return Response(gen(VideoCamera(rtsp_url)),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+def camera_card(cam_id):
+    return dbc.Card(
+        [
+            dbc.CardImg(src=f"/video_feed/{cam_id}", top=True, style={"height": "300px", "objectFit": "cover"}),
+        ],
+        style={"width": "22rem", "margin": "10px"},
+    )
 
 # layout = dbc.Container(
 #     [
@@ -108,58 +115,58 @@ dropdown_menu = dcc.Dropdown(
 )
 
 
-# ! Will try to avoid this by directly opening specific feeds in speccific pages.
-# @app.callback(
-#     dash.Output("camera-mosaic", "children"),
-#     [dash.Input("camera-label-dropdown", "value"),
-#      dash.Input("interval-component", "n_intervals")
-#         ]
-# )
-# def update_mosaic(selected_label):
+
+@app.callback(
+    dash.Output("camera-mosaic", "children"),
+    [dash.Input("camera-label-dropdown", "value"),
+     dash.Input("interval-component", "n_intervals")
+        ]
+)
+def update_mosaic(selected_label):
     
-#     # Close any opened cameras
+    # Close any opened cameras
     
-#     # Shut down all open video feeds
-#     print(f"Selected label: {selected_label}")
-#     cam_ids = CAMS_LABELS.get(selected_label, [])
-#     print(f"Camera IDs: {cam_ids}")
-#     if not cam_ids:
-#         return html.Div("No cameras found for this label.")
+    # Shut down all open video feeds
+    print(f"Selected label: {selected_label}")
+    cam_ids = CAMS_LABELS.get(selected_label, [])
+    print(f"Camera IDs: {cam_ids}")
+    if not cam_ids:
+        return html.Div("No cameras found for this label.")
     
-#     cards = [dbc.Col(camera_card(str(cam_id)), width=4) for cam_id in cam_ids]
-#     print(f"Generated cards")
-#     return dbc.Row(cards, justify="center")
+    cards = [dbc.Col(camera_card(str(cam_id)), width=4) for cam_id in cam_ids]
+    print(f"Generated cards")
+    return dbc.Row(cards, justify="center")
+
+
+layout = html.Div(
+    [
+        html.H2("Camera Area", style={"textAlign": "center", "margin": "20px"}),
+        dropdown_menu,
+        html.Div(id="camera-mosaic"),
+        dcc.Interval(id="interval-component", interval=1000, n_intervals=0)
+    ]
+)
+
+app.layout = layout
+
+if __name__ == '__main__':
+    threading.Thread(target=app.run).start()
+    server.run()
 
 
 
 
-import layouts
-from pages import home_page, zone_page, platform_page
-
-app.layout = layouts.main_layout.create_layout(app)
-
-home_page.layout.children = layouts.home_layout.create_layout(app, server)
-zone_page.layout.children = layouts.zone_layout.create_layout(app, server)
-platform_page.layout.children = layouts.platform_layout.create_layout(app, server)
 
 
+# Setup pages
+# import layouts
+# from pages import home_page
 
+# app.layout = layouts.main_layout.create_layout(app)
+
+# home_page.layout.children = layouts.home_layout.create_layout(app, server)
 
 
 
 
-# layout = html.Div(
-#     [
-#         html.H2("Camera Area", style={"textAlign": "center", "margin": "20px"}),
-#         dropdown_menu,
-#         html.Div(id="camera-mosaic"),
-#         dcc.Interval(id="interval-component", interval=1000, n_intervals=0)
-#     ]
-# )
-
-# app.layout = layout
-
-# if __name__ == '__main__':
-#     threading.Thread(target=app.run).start()
-#     server.run()
 

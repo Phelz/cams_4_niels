@@ -6,7 +6,17 @@ import components
 
 def render(App: Dash):
     
+        
     home_tab  = dbc.NavItem(dbc.NavLink("Home", href="/"))
+    
+    zone_tab          = dbc.NavItem(dbc.NavLink("Zone", href="/zone"))
+    platform_tab = dbc.NavItem(dbc.NavLink("Platform", href="/platform"))
+    equipment_tab     = dbc.NavItem(dbc.NavLink("Equipment", href="/equipment"))
+    helium_tab     = dbc.NavItem(dbc.NavLink("Helium", href="/helium"))
+    rooms_tab     = dbc.NavItem(dbc.NavLink("Rooms", href="/rooms"))
+
+
+    
     logo_row = dbc.Row(
         [
             dbc.Col(
@@ -25,10 +35,15 @@ def render(App: Dash):
                 dbc.Nav(
                     [
                         home_tab,
-                        # login_tab,
-                        # database_tab,
+                        zone_tab,
+                        platform_tab,
+                        equipment_tab,
+                        helium_tab,
+                        rooms_tab,
                     ],
                     navbar=True,
+                    pills=True,
+                    className="ms-2",
                     id=components.ids.NAVBAR_ID,
                 )
             ],

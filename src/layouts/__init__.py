@@ -1,2 +1,7 @@
 import layouts.main_layout
 import layouts.home_layout
+import layouts.zone_layout
+import layouts.platform_layout
+import layouts.equipment_layout
+import layouts.helium_layout
+import layouts.rooms_layout
