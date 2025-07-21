@@ -1,18 +1,26 @@
-import dash
-
 import dash_bootstrap_components as dbc
-
-def camera_card(cam_id):
-    return dbc.Card(
-        [
-            dbc.CardImg(src=f"/video_feed/{cam_id}", top=True, style={"height": "300px", "objectFit": "cover"}),
-        ],
-        style={"width": "22rem", "margin": "10px"},
-    )
+import dash
+import utils
+import config
 
 
 def create_layout(App: dash.Dash, server=None) -> dash.html.Div:
+    
+    rooms_cams_ids = config.CAMS_LABELS['Rooms']
+        
+    # Group camera IDs into chunks of 3
+    cam_chunks = [rooms_cams_ids[i:i+3] for i in range(0, len(rooms_cams_ids), 3)]
+    
+
     return dash.html.Div(
         [
-        ]
+            dbc.Row(
+                [
+                    dbc.Col(utils.plotly_utils.create_camera_card(cam_id), width=4)
+                    for cam_id in chunk
+                ],
+            )
+            for chunk in cam_chunks
+        ],
+        # style={"display": "block"},
     )

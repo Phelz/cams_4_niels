@@ -2,39 +2,17 @@ import asyncio
 import base64
 import cv2
 import threading
-
-from quart import Quart, websocket
 import dash
-from dash_bootstrap_components.themes import LUX as THEME
-
-from collections import defaultdict
-from rich import print
 import time
 
-CAMS_LABELS = {
-    'Zone': [37, 38, 39, 41, 45, 52, 54, 56, 57, 59, 60, 61, 67],
-    'Platform': [35, 40, 43, 51, 57, 60, 62, 63, 65, 66, 68],
-    'Equipment' : [42, 44, 53, 69],
-    'Helium': [39, 40, 61, 67 ],
-    'Rooms' : [34, 36, 47, 48, 64, 69,]
-}
+from quart import Quart, websocket
+from dash_bootstrap_components.themes import LUX as THEME
+from collections import defaultdict
+from rich import print
 
-DELAY_BETWEEN_FRAMES = 0.05 # ! add delay (in seconds) if CPU usage is too high
+import utils
+import config
 
-
-def get_camera_rtsp_path(cam_id:int) -> str:
-    ''' Get the RTSP path for a given camera ID.'''
-    
-    # ! Unfortunately, needs to be hardcoded, since not all use maxalpha.
-    if 34 <= int(cam_id) <= 43:
-        return f"rtsp://alphacam:maxalpha@alphacam{cam_id}.cern.ch/stream1"
-    elif 44 <= int(cam_id) <= 48:
-        return f"rtsp://alphacam:Maxalpha@alphacam{cam_id}.cern.ch/stream1"
-    elif int(cam_id) >= 50:
-        return f"rtsp://alpha-admin:Nmt30smiAg$@alphacam{cam_id}.cern.ch/stream1"
-    else:
-        return None
-    
 
 class CameraStreamManager:
     ''' Manages camera streams and frames in a thread-safe manner. '''
@@ -80,15 +58,15 @@ server = Quart(__name__)
 camera_manager = CameraStreamManager()
 
 @server.websocket("/video_feed/<cam_id>")
-async def stream(cam_id):
+async def stream(cam_id: int) -> None:
     ''' Stream video frames for a given camera ID via WebSocket. Uses Asyncio for non-blocking I/O. '''
     
     cam_id = int(cam_id)
-    rtsp_url = get_camera_rtsp_path(cam_id)
+    rtsp_url = config.get_camera_rtsp_path(cam_id)
     camera_manager.start_camera_thread(cam_id, rtsp_url)
 
     while True:
-        await asyncio.sleep(DELAY_BETWEEN_FRAMES)
+        await asyncio.sleep(config.DELAY_BETWEEN_FRAMES)
         frame = camera_manager.get_frame(cam_id)
         if frame:
             await websocket.send(f"data:image/jpeg;base64,{base64.b64encode(frame).decode()}")

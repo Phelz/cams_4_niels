@@ -29,15 +29,6 @@ app = dash.Dash(
 server = app.server
 
 
-CAMS_LABELS = {
-    'Zone': [37, 38, 39, 41, 45, 52, 54, 56, 57, 59, 60, 61, 67],
-    'Platform': [35, 40, 43, 51, 57, 60, 62, 63, 65, 66, 68],
-    'Equipment' : [42, 44, 53, 69],
-    'Helium': [39, 40, 61, 67 ],
-    'Rooms' : [34, 36, 47, 48, 64, 69,]
-}
-
-
 
 def get_camera_rtsp_path(cam_id):
     # ! Unfortunately, needs to be hardcoded.
