@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import components
 
 
-def render(App: Dash):
+def render(App: Dash) -> html.Div:
     
         
     home_tab  = dbc.NavItem(dbc.NavLink("Home", href="/"))
@@ -44,7 +44,7 @@ def render(App: Dash):
                     navbar=True,
                     pills=True,
                     className="ms-2",
-                    id=components.ids.NAVBAR_ID,
+                    id="nav-bar",
                 )
             ],
         ),

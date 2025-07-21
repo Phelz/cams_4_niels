@@ -10,7 +10,6 @@ from dash_bootstrap_components.themes import LUX as THEME
 from collections import defaultdict
 from rich import print
 
-import utils
 import config
 
 
@@ -54,7 +53,7 @@ class CameraStreamManager:
 
 
 # Setup small Quart server for streaming via websocket.
-server = Quart(__name__)
+server = Quart(__name__) 
 camera_manager = CameraStreamManager()
 
 @server.websocket("/video_feed/<cam_id>")
@@ -65,18 +64,16 @@ async def stream(cam_id: int) -> None:
     rtsp_url = config.get_camera_rtsp_path(cam_id)
     camera_manager.start_camera_thread(cam_id, rtsp_url)
 
+    # The loop that sends frames to the WebSocket client
     while True:
-        await asyncio.sleep(config.DELAY_BETWEEN_FRAMES)
+        await asyncio.sleep(config.DELAY_BETWEEN_FRAMES) # Wait for the camera to have a frame ready
         frame = camera_manager.get_frame(cam_id)
         if frame:
             await websocket.send(f"data:image/jpeg;base64,{base64.b64encode(frame).decode()}")
 
-
-
-# === DASH  ===
+# UI for displaying the camera feeds
 app = dash.Dash(
     __name__,
-    # server=server,
     title="Cams 4 Niels",
     external_stylesheets=[THEME],
     use_pages=True,
@@ -86,10 +83,8 @@ app = dash.Dash(
     ],
 )
 
-# Dash multipage container
 import layouts.main_layout
 app.layout = layouts.main_layout.create_layout(app)
-
 
 if __name__ == "__main__":
     threading.Thread(target=app.run).start()

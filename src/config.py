@@ -10,6 +10,9 @@ CAMS_LABELS = {
     'Rooms' : [34, 36, 47, 48, 64, 69,]
 }
 
+ALL_CAMS_IDS = [cam_id for cam_ids in CAMS_LABELS.values() for cam_id in cam_ids]
+
+
 
 def get_camera_rtsp_path(cam_id:int) -> str:
     ''' Get the RTSP path for a given camera ID.'''

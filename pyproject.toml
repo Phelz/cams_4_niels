@@ -1,6 +1,6 @@
 [project]
 name = "cams-4-niels"
-version = "0.1.0"
+version = "1.0.0"
 description = ""
 authors = [
     {name = "Filo Ghaly",email = "filobateer.ghaly@ucalgary.ca"}
