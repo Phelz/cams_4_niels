@@ -41,13 +41,13 @@ def create_layout(App: dash.Dash, server=None) -> dash.html.Div:
 
     return dash.html.Div(
         [
-            # dbc.Row(
-            #     [
-            #         dbc.Col(camera_card(cam_id), width=4)
-            #         for cam_id in chunk
-            #     ],
-            # )
-            # for chunk in cam_chunks
+            dbc.Row(
+                [
+                    dbc.Col(camera_card(cam_id), width=4)
+                    for cam_id in chunk
+                ],
+            )
+            for chunk in cam_chunks
         ],
         # style={"display": "block"},
     )

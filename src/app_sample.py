@@ -8,33 +8,79 @@ from dash.dependencies import Output, Input
 from quart import Quart, websocket
 from dash_extensions import WebSocket
 
+from collections import defaultdict
+import time
 
-class VideoCamera(object):
-    def __init__(self, video_path):
-        self.video = cv2.VideoCapture(video_path)
+# class VideoCamera(object):
+#     def __init__(self, video_path):
+#         self.video = cv2.VideoCapture(video_path)
 
-    def __del__(self):
-        self.video.release()
+#     def __del__(self):
+#         self.video.release()
 
-    def get_frame(self):
-        success, image = self.video.read()
-        _, jpeg = cv2.imencode('.jpg', image)
-        return jpeg.tobytes()
+#     def get_frame(self):
+#         success, image = self.video.read()
+#         _, jpeg = cv2.imencode('.jpg', image)
+#         return jpeg.tobytes()
 
+
+class CameraStreamManager:
+    def __init__(self):
+        self.frames = {}  # cam_id -> latest frame (JPEG bytes)
+        self.locks = defaultdict(threading.Lock)
+        self.threads = {}
+
+    def start_camera_thread(self, cam_id, rtsp_url):
+        if cam_id in self.threads:
+            return
+
+        def capture_loop():
+            cap = cv2.VideoCapture(rtsp_url)
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if ret:
+                    _, jpeg = cv2.imencode('.jpg', frame)
+                    with self.locks[cam_id]:
+                        self.frames[cam_id] = jpeg.tobytes()
+                time.sleep(0.03)  # adjust as needed
+
+        thread = threading.Thread(target=capture_loop, daemon=True)
+        self.threads[cam_id] = thread
+        thread.start()
+
+    def get_frame(self, cam_id):
+        with self.locks[cam_id]:
+            return self.frames.get(cam_id, b'')
+
+camera_manager = CameraStreamManager()
 
 # Setup small Quart server for streaming via websocket.
 server = Quart(__name__)
 delay_between_frames = 0.00  # add delay (in seconds) if CPU usage is too high
 
 
+# @server.websocket("/stream/<cam_id>")
+# async def stream(cam_id):
+#     camera = VideoCamera(f'rtsp://alphacam:maxalpha@alphacam{cam_id}.cern.ch/stream1')  # zero means webcam
+#     while True:
+#         if delay_between_frames is not None:
+#             await asyncio.sleep(delay_between_frames)  # add delay if CPU usage is too high
+#         frame = camera.get_frame()
+#         await websocket.send(f"data:image/jpeg;base64, {base64.b64encode(frame).decode()}")
+
+
 @server.websocket("/stream/<cam_id>")
 async def stream(cam_id):
-    camera = VideoCamera(f'rtsp://alphacam:maxalpha@alphacam{cam_id}.cern.ch/stream1')  # zero means webcam
+    cam_id = int(cam_id)
+    rtsp_url = f'rtsp://alphacam:maxalpha@alphacam{cam_id}.cern.ch/stream1'
+    camera_manager.start_camera_thread(cam_id, rtsp_url)
+
     while True:
-        if delay_between_frames is not None:
-            await asyncio.sleep(delay_between_frames)  # add delay if CPU usage is too high
-        frame = camera.get_frame()
-        await websocket.send(f"data:image/jpeg;base64, {base64.b64encode(frame).decode()}")
+        await asyncio.sleep(delay_between_frames)
+        frame = camera_manager.get_frame(cam_id)
+        if frame:
+            await websocket.send(f"data:image/jpeg;base64,{base64.b64encode(frame).decode()}")
+
         
 
 

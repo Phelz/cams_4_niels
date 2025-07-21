@@ -27,12 +27,13 @@ def camera_card(cam_id):
 def create_layout(App: dash.Dash, server=None) -> dash.html.Div:
     
     # Create a clientside callback for each camera to update the image source
-    for cam_id in zone_cams_ids:
-        App.clientside_callback(
-            f"function(m){{return m? m.data : '';}}",
-            Output(f"video-{cam_id}", "src"),
-            Input(f"ws-{cam_id}", "message")
-        )
+    # for cam_id in zone_cams_ids:
+    # for cam_id in range(30, 70):
+    #     App.clientside_callback(
+    #         f"function(m){{return m? m.data : '';}}",
+    #         Output(f"video-{cam_id}", "src"),
+    #         Input(f"ws-{cam_id}", "message")
+    #     )
     
     # Hardcode each row and column using the camera ids
     return dash.html.Div(
