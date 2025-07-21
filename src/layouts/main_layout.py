@@ -2,13 +2,13 @@ import dash
 import dash_bootstrap_components as dbc
 
 import components
+from dash_extensions import WebSocket
 
 from rich import print
 
 
 def create_layout(App: dash.Dash) -> dash.html.Div:
     
- 
     
     layout = dash.html.Div(
         [

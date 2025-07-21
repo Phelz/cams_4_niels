@@ -1,22 +1,72 @@
+from rich import print
+
+import asyncio
+import base64
+import cv2
+import threading
+
+from quart import Quart, websocket, Response, send_from_directory
 import dash
 from dash import dcc, html
-import flask
-from flask import Flask, Response
 import dash_bootstrap_components as dbc
-from quart import Quart, websocket
-import cv2
-from rich import print
-# from datetime import datetime, timedelta
 from dash_bootstrap_components.themes import LUX as THEME
 
-import threading
-# from src import definitions
+# === DASH + QUART SETUP ===
+CAMS_LABELS = {
+    'Zone': [37, 38, 39, 41, 45, 52, 54, 56, 57, 59, 60, 61, 67],
+    'Platform': [35, 40, 43, 51, 57, 60, 62, 63, 65, 66, 68],
+    'Equipment' : [42, 44, 53, 69],
+    'Helium': [39, 40, 61, 67 ],
+    'Rooms' : [34, 36, 47, 48, 64, 69,]
+}
 
-# Configure the app
+def get_camera_rtsp_path(cam_id):
+    # ! Unfortunately, needs to be hardcoded.
+    if 34 <= int(cam_id) <= 43:
+        return f"rtsp://alphacam:maxalpha@alphacam{cam_id}.cern.ch/stream1"
+    elif 44 <= int(cam_id) <= 48:
+        return f"rtsp://alphacam:Maxalpha@alphacam{cam_id}.cern.ch/stream1"
+    elif int(cam_id) >= 50:
+        return f"rtsp://alpha-admin:Nmt30smiAg$@alphacam{cam_id}.cern.ch/stream1"
+    else:
+        return None
+    
+class VideoCamera(object):
+    def __init__(self, video_path):
+        self.video = cv2.VideoCapture(video_path)
+
+    def __del__(self):
+        self.video.release()
+
+    def get_frame(self):
+        success, image = self.video.read()
+        if not success:
+            print(f"[WARN] Failed to read frame from camera {self.video}")
+            return b''
+        _, jpeg = cv2.imencode('.jpg', image)
+        return jpeg.tobytes()
+
+
+# Setup small Quart server for streaming via websocket.
+server = Quart(__name__)
+delay_between_frames = 0.00  # add delay (in seconds) if CPU usage is too high
+
+
+@server.websocket("/video_feed/<cam_id>")
+async def stream(cam_id):
+    camera = VideoCamera( get_camera_rtsp_path(cam_id) )  # zero means webcam
+    while True:
+        if delay_between_frames is not None:
+            await asyncio.sleep(delay_between_frames)  # add delay if CPU usage is too high
+        frame = camera.get_frame()
+        await websocket.send(f"data:image/jpeg;base64, {base64.b64encode(frame).decode()}")
+
+
+
+# === DASH  ===
 app = dash.Dash(
     __name__,
-    # server=Quart(__name__),
-    server=flask.Flask(__name__),
+    # server=server,
     title="Cams 4 Niels",
     external_stylesheets=[THEME],
     use_pages=True,
@@ -26,140 +76,23 @@ app = dash.Dash(
     ],
 )
 
-server = app.server
-
-
-CAMS_LABELS = {
-    'Zone': [37, 38, 39, 41, 45, 52, 54, 56, 57, 59, 60, 61, 67],
-    'Platform': [35, 40, 43, 51, 57, 60, 62, 63, 65, 66, 68],
-    'Equipment' : [42, 44, 53, 69],
-    'Helium': [39, 40, 61, 67 ],
-    'Rooms' : [34, 36, 47, 48, 64, 69,]
-}
-
-
-def get_camera_rtsp_path(cam_id):
-    # ! Unfortunately, needs to be hardcoded.
-    
-    if 34 <= int(cam_id) <= 43:
-        return f"rtsp://alphacam:maxalpha@alphacam{cam_id}.cern.ch/stream1"
-    elif 44 <= int(cam_id) <= 48:
-        return f"rtsp://alphacam:Maxalpha@alphacam{cam_id}.cern.ch/stream1"
-    elif int(cam_id) >= 50:
-        return f"rtsp://alpha-admin:Nmt30smiAg$@alphacam{cam_id}.cern.ch/stream1"
-    else:
-        return None
 
 
 
-def gen(camera):
-    while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-
-
-class VideoCamera(object):
-    def __init__(self, camera_rtsp):
-        self.video = cv2.VideoCapture(camera_rtsp)
-
-    def __del__(self):
-        self.video.release()
-
-    def get_frame(self):
-        success, image = self.video.read()
-        ret, jpeg = cv2.imencode('.jpg', image)
-        return jpeg.tobytes()
-
-
-
-# def create_layout(App: dash.Dash, Server: Flask) -> dash.html.Div:
-    
-    
-@server.route('/video_feed/<cam_id>')
-def video_feed(cam_id):
-    rtsp_url = get_camera_rtsp_path(cam_id)
-    if not rtsp_url:
-        return "Camera not found", 404
-    return Response(gen(VideoCamera(rtsp_url)),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-# layout = dbc.Container(
-#     [
-#         html.H1("Webcam Feeds", style={"textAlign": "center", "margin": "20px"}),
-#         dbc.Row(
-#             [
-#                 dbc.Col(camera_card("41")),
-#                 dbc.Col(camera_card("35")),
-#                 dbc.Col(camera_card("56")),
-#             ],
-#             justify="center",
-#         ),
-#     ],
-#     fluid=True,
-# )
-
-dropdown_menu = dcc.Dropdown(
-    id="camera-label-dropdown",
-    options=[{"label": label, "value": label} for label in CAMS_LABELS.keys()],
-    value=list(CAMS_LABELS.keys())[0],
-    style={"width": "300px", "margin": "20px auto"}
-)
-
-
-# ! Will try to avoid this by directly opening specific feeds in speccific pages.
-# @app.callback(
-#     dash.Output("camera-mosaic", "children"),
-#     [dash.Input("camera-label-dropdown", "value"),
-#      dash.Input("interval-component", "n_intervals")
-#         ]
-# )
-# def update_mosaic(selected_label):
-    
-#     # Close any opened cameras
-    
-#     # Shut down all open video feeds
-#     print(f"Selected label: {selected_label}")
-#     cam_ids = CAMS_LABELS.get(selected_label, [])
-#     print(f"Camera IDs: {cam_ids}")
-#     if not cam_ids:
-#         return html.Div("No cameras found for this label.")
-    
-#     cards = [dbc.Col(camera_card(str(cam_id)), width=4) for cam_id in cam_ids]
-#     print(f"Generated cards")
-#     return dbc.Row(cards, justify="center")
-
-
-
-
-import layouts
+# Dash multipage container
+import layouts.main_layout
+import components
 from pages import home_page, zone_page, platform_page
-
 app.layout = layouts.main_layout.create_layout(app)
 
-home_page.layout.children = layouts.home_layout.create_layout(app, server)
-zone_page.layout.children = layouts.zone_layout.create_layout(app, server)
-platform_page.layout.children = layouts.platform_layout.create_layout(app, server)
 
+# # Register pages (example)
+# home_page.layout = layouts.home_layout.create_layout(app, server)
+# zone_page.layout = layouts.zone_layout.create_layout(app, server)
+# platform_page.layout = layouts.platform_layout.create_layout(app, server)
 
+# === RUN APP ===
 
-
-
-
-
-# layout = html.Div(
-#     [
-#         html.H2("Camera Area", style={"textAlign": "center", "margin": "20px"}),
-#         dropdown_menu,
-#         html.Div(id="camera-mosaic"),
-#         dcc.Interval(id="interval-component", interval=1000, n_intervals=0)
-#     ]
-# )
-
-# app.layout = layout
-
-# if __name__ == '__main__':
-#     threading.Thread(target=app.run).start()
-#     server.run()
-
+if __name__ == "__main__":
+    threading.Thread(target=app.run).start()
+    server.run()
