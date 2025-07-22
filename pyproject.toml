@@ -15,7 +15,11 @@ dependencies = [
     "rich (>=14.0.0,<15.0.0)",
     "dash-bootstrap-components (>=2.0.3,<3.0.0)",
     "dash-core-components (>=2.0.0,<3.0.0)",
-    "dash-html-components (>=2.0.0,<3.0.0)"
+    "dash-html-components (>=2.0.0,<3.0.0)",
+    "wheel (>=0.45.1,<0.46.0)",
+    "uwsgi (>=2.0.30,<3.0.0)",
+    "gunicorn (>=23.0.0,<24.0.0)",
+    "asgiref (>=3.9.1,<4.0.0)",
 
 
 

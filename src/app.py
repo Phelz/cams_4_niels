@@ -12,7 +12,6 @@ from rich import print
 
 import config
 
-
 class CameraStreamManager:
     ''' Manages camera streams and frames in a thread-safe manner. '''
     
@@ -86,6 +85,7 @@ app = dash.Dash(
 import layouts.main_layout
 app.layout = layouts.main_layout.create_layout(app)
 
-if __name__ == "__main__":
-    threading.Thread(target=app.run).start()
-    server.run()
+
+# if __name__ == "__main__":
+#     threading.Thread(target=app.run).start()
+#     server.run()
