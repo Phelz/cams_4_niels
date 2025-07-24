@@ -70,6 +70,7 @@ async def stream(cam_id: int) -> None:
         if frame:
             await websocket.send(f"data:image/jpeg;base64,{base64.b64encode(frame).decode()}")
 
+
 # UI for displaying the camera feeds
 app = dash.Dash(
     __name__,
@@ -85,7 +86,6 @@ app = dash.Dash(
 import layouts.main_layout
 app.layout = layouts.main_layout.create_layout(app)
 
-
-# if __name__ == "__main__":
-#     threading.Thread(target=app.run).start()
-#     server.run()
+if __name__ == "__main__":
+    threading.Thread(target=app.run).start()
+    server.run()

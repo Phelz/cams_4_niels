@@ -1,0 +1,26 @@
+[Unit]
+Description=Quart App Service for Serving Cam Feeds
+After=network.target
+
+[Service]
+Type=simple
+User=filo
+Group=filo
+DynamicUser=true
+
+WorkingDirectory=/home/filo/projects/cams_4_niels
+PrivateTmp=true
+
+
+EnvironmentFile="PATH=/home/filo/projects/cams_4_niels/.venv/bin/activate"
+
+ExecStart=/home/filo/projects/cams_4_niels/.venv/bin/hypercorn \
+        -b 0.0.0.0:5000 \
+        -w 4 \
+        app:server
+
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,5 +1,9 @@
+# SERVER_IP = '128.141.240.230' # ! ATRAP Room, ALPHACPC47
+SERVER_IP = '0.0.0.0' # ! ATRAP Room, ALPHACPC47
+QUART_SERVER_PORT = 5000
+DASH_APP_PORT = 8050
 
-DELAY_BETWEEN_FRAMES = 0.05 # ! add delay (in seconds) if CPU usage is too high
+DELAY_BETWEEN_FRAMES = 2 # ! add delay (in seconds) if CPU usage is too high
 
 # ! How Niels wants to cluster cameras.
 CAMS_LABELS = {
