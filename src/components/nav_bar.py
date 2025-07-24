@@ -21,8 +21,10 @@ def render(App: Dash) -> html.Div:
         [
             dbc.Col(
                 [
+                    html.Img(src="/assets/niels_is_watching_u_crop.jpeg", height="40px", style={"marginRight": "10px"}),
                     dbc.NavbarBrand(App.title, className="ms-2"),
                 ],
+                width="auto",
             ),
         ],
         align="start",

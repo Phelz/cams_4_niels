@@ -8,7 +8,7 @@ User=alpha
 Group=alpha
 DynamicUser=true
 
-WorkingDirectory=/home/alpha/cams_4_niels
+WorkingDirectory=/home/alpha/cams_4_niels/src
 PrivateTmp=true
 
 

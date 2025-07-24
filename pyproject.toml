@@ -30,6 +30,7 @@ packages = [
     {include = "components", from = "src"},
     {include = "layouts", from = "src"},
     {include = "utils", from = "src"},
+    {include = "assets", from = "src"},
 
 ]
 
