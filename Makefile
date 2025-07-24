@@ -1,8 +1,17 @@
-.PHONY: copy_services enable_services start_services message all
+.PHONY: firewall copy_services enable_services start_services message all
 
 UBUNTU_2204_SYSTEMD_DIR = /etc/systemd/system
 
-all: copy_services enable_services start_services message
+all: firewall copy_services enable_services start_services message
+
+firewall:
+	@echo "Setting up firewall rules..."
+	ufw enable
+	ufw allow 5000
+	ufw allow 8050
+	ufw reload
+	ufw status verbose
+	@echo "Firewall rules set for ports 5000 and 8050."
 
 copy_services:
 	cp -v dash_app.service $(UBUNTU_2204_SYSTEMD_DIR)/dash_app.service
