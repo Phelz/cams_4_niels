@@ -1,12 +1,8 @@
-.PHONY: poetry firewall copy_services enable_services start_services message all
+.PHONY: firewall copy_services enable_services start_services message all
 
 UBUNTU_2204_SYSTEMD_DIR = /etc/systemd/system
 
-all: poetry firewall copy_services enable_services start_services message
-
-poetry:
-	@echo "Installing the App using Poetry..."
-	poetry update
+all: firewall copy_services enable_services start_services message
 
 firewall:
 	@echo "Setting up firewall rules..."
