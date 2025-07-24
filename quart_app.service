@@ -15,7 +15,7 @@ PrivateTmp=true
 EnvironmentFile="PATH=/home/filo/projects/cams_4_niels/.venv/bin/activate"
 
 ExecStart=/home/filo/projects/cams_4_niels/.venv/bin/hypercorn \
-        -b 0.0.0.0:5000 \
+        -b 128.141.240.230:5000 \
         -w 4 \
         app:server
 
