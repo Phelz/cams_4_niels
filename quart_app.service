@@ -4,17 +4,17 @@ After=network.target
 
 [Service]
 Type=simple
-User=filo
-Group=filo
+User=alpha
+Group=alpha
 DynamicUser=true
 
-WorkingDirectory=/home/filo/projects/cams_4_niels
+WorkingDirectory=/home/alpha/cams_4_niels
 PrivateTmp=true
 
 
-EnvironmentFile="PATH=/home/filo/projects/cams_4_niels/.venv/bin/activate"
+EnvironmentFile="PATH=/home/alpha/cams_4_niels/.venv/bin/activate"
 
-ExecStart=/home/filo/projects/cams_4_niels/.venv/bin/hypercorn \
+ExecStart=/home/alpha/cams_4_niels/.venv/bin/hypercorn \
         -b 128.141.240.230:5000 \
         -w 4 \
         app:server
